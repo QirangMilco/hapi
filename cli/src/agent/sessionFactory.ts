@@ -21,6 +21,7 @@ export type SessionBootstrapOptions = {
     workingDirectory?: string
     tag?: string
     agentState?: AgentState | null
+    existingSessionId?: string
 }
 
 export type SessionBootstrapResult = {
@@ -120,14 +121,25 @@ export async function bootstrapSession(options: SessionBootstrapOptions): Promis
         workingDirectory,
         machineId
     })
-
-    const sessionInfo = await api.getOrCreateSession({
-        tag: sessionTag,
-        metadata,
-        state: agentState
-    })
+    const sessionInfo = options.existingSessionId
+        ? await api.getSessionById(options.existingSessionId)
+        : await api.getOrCreateSession({
+            tag: sessionTag,
+            metadata,
+            state: agentState
+        })
 
     const session = api.sessionSyncClient(sessionInfo)
+    session.updateMetadata((current) => ({
+        ...current,
+        ...metadata,
+        summary: current.summary,
+        name: current.name
+    }))
+    session.updateAgentState((current) => ({
+        ...current,
+        controlledByUser: false
+    }))
 
     await reportSessionStarted(sessionInfo.id, metadata)
 

@@ -13,6 +13,7 @@ export type McpServerStdio = {
 export type AgentSessionConfig = {
     cwd: string;
     mcpServers: McpServerStdio[];
+    resumeSessionId?: string;
 };
 
 export type PromptContent = {

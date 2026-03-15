@@ -58,6 +58,7 @@ export default {
   // Session header
   'session.title': '文件',
   'session.more': '更多操作',
+  'session.snowSessionId': 'Snow 会话',
 
   // Session actions
   'session.action.rename': '重命名',

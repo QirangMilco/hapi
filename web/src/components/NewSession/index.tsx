@@ -219,7 +219,7 @@ export function NewSession(props: {
 
         setError(null)
         try {
-            const resolvedModel = model !== 'auto' && agent !== 'opencode' ? model : undefined
+            const resolvedModel = model !== 'auto' && agent !== 'opencode' && agent !== 'snow' ? model : undefined
             const result = await spawnSession({
                 machineId,
                 directory: directory.trim(),

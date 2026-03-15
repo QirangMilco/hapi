@@ -346,6 +346,8 @@ export async function startRunner(): Promise<void> {
               ? 'gemini'
               : agent === 'opencode'
                 ? 'opencode'
+                : agent === 'snow'
+                  ? 'snow'
                 : 'claude';
         const args = [agentCommand];
         if (options.resumeSessionId) {
@@ -358,7 +360,7 @@ export async function startRunner(): Promise<void> {
             }
         }
         args.push('--hapi-starting-mode', 'remote', '--started-by', 'runner');
-        if (options.model && agent !== 'opencode') {
+        if (options.model && agent !== 'opencode' && agent !== 'snow') {
           args.push('--model', options.model);
         }
         if (yolo) {

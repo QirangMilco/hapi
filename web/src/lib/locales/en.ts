@@ -58,6 +58,7 @@ export default {
   // Session header
   'session.title': 'Files',
   'session.more': 'More actions',
+  'session.snowSessionId': 'Snow Session',
 
   // Session actions
   'session.action.rename': 'Rename',

@@ -372,7 +372,7 @@ export class ApiClient {
     async spawnSession(
         machineId: string,
         directory: string,
-        agent?: 'claude' | 'codex' | 'cursor' | 'gemini' | 'opencode',
+        agent?: 'claude' | 'codex' | 'cursor' | 'gemini' | 'opencode' | 'snow',
         model?: string,
         yolo?: boolean,
         sessionType?: 'simple' | 'worktree',

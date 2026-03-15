@@ -1,5 +1,5 @@
 export function isCodexFamilyFlavor(flavor?: string | null): boolean {
-    return flavor === 'codex' || flavor === 'gemini' || flavor === 'opencode'
+    return flavor === 'codex' || flavor === 'gemini' || flavor === 'opencode' || flavor === 'snow'
 }
 
 export function isClaudeFlavor(flavor?: string | null): boolean {

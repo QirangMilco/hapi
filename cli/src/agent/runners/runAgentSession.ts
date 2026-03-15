@@ -11,6 +11,62 @@ import { getHappyCliCommand } from '@/utils/spawnHappyCLI';
 import { registerKillSessionHandler } from '@/claude/registerKillSessionHandler';
 import { bootstrapSession } from '@/agent/sessionFactory';
 import { formatMessageWithAttachments } from '@/utils/attachmentFormatter';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { configuration } from '@/configuration';
+
+type SnowSessionLink = {
+    snowSessionId: string;
+    hapiSessionId: string;
+    updatedAt: number;
+};
+
+type SnowSessionLinksStore = {
+    links: SnowSessionLink[];
+};
+
+const SNOW_SESSION_LINKS_FILE = join(configuration.happyHomeDir, 'snow-session-links.json');
+
+function readSnowSessionLinks(): SnowSessionLinksStore {
+    if (!existsSync(SNOW_SESSION_LINKS_FILE)) {
+        return { links: [] };
+    }
+    try {
+        const raw = JSON.parse(readFileSync(SNOW_SESSION_LINKS_FILE, 'utf8')) as Partial<SnowSessionLinksStore>;
+        if (!Array.isArray(raw.links)) {
+            return { links: [] };
+        }
+        const links = raw.links.filter((item): item is SnowSessionLink => {
+            if (!item || typeof item !== 'object') return false;
+            const record = item as Partial<SnowSessionLink>;
+            return typeof record.snowSessionId === 'string'
+                && typeof record.hapiSessionId === 'string'
+                && typeof record.updatedAt === 'number'
+                && record.snowSessionId.length > 0
+                && record.hapiSessionId.length > 0;
+        });
+        return { links };
+    } catch {
+        return { links: [] };
+    }
+}
+
+function writeSnowSessionLinks(store: SnowSessionLinksStore): void {
+    writeFileSync(SNOW_SESSION_LINKS_FILE, JSON.stringify(store), 'utf8');
+}
+
+function upsertSnowSessionLink(snowSessionId: string, hapiSessionId: string): void {
+    const store = readSnowSessionLinks();
+    const now = Date.now();
+    const next = store.links.filter((item) => item.snowSessionId !== snowSessionId);
+    next.push({
+        snowSessionId,
+        hapiSessionId,
+        updatedAt: now
+    });
+    next.sort((a, b) => b.updatedAt - a.updatedAt);
+    writeSnowSessionLinks({ links: next.slice(0, 500) });
+}
 
 function emitReadyIfIdle(props: {
     queueSize: () => number;
@@ -27,6 +83,8 @@ function emitReadyIfIdle(props: {
 export async function runAgentSession(opts: {
     agentType: string;
     startedBy?: 'runner' | 'terminal';
+    resumeSessionId?: string;
+    hapiSessionId?: string;
 }): Promise<void> {
     const initialState: AgentState = {
         controlledByUser: false
@@ -35,7 +93,8 @@ export async function runAgentSession(opts: {
         flavor: opts.agentType,
         startedBy: opts.startedBy ?? 'terminal',
         workingDirectory: process.cwd(),
-        agentState: initialState
+        agentState: initialState,
+        existingSessionId: opts.hapiSessionId
     });
 
     session.updateAgentState((currentState) => ({
@@ -68,8 +127,17 @@ export async function runAgentSession(opts: {
 
     const agentSessionId = await backend.newSession({
         cwd: process.cwd(),
-        mcpServers
+        mcpServers,
+        resumeSessionId: opts.resumeSessionId
     });
+
+    if (opts.agentType === 'snow') {
+        upsertSnowSessionLink(agentSessionId, session.sessionId);
+        session.updateMetadata((metadata) => ({
+            ...metadata,
+            snowSessionId: agentSessionId
+        }));
+    }
 
     let thinking = false;
     let shouldExit = false;

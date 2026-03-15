@@ -74,6 +74,7 @@ ${chalk.bold('Usage:')}
   hapi cursor            Start Cursor Agent mode
   hapi gemini            Start Gemini ACP mode
   hapi opencode          Start OpenCode ACP mode
+  hapi snow              Control Snow via SSE mode
   hapi mcp               Start MCP stdio bridge
   hapi connect           (not available in direct-connect mode)
   hapi notify            (not available in direct-connect mode)

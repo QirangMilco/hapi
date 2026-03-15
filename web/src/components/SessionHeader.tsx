@@ -71,6 +71,7 @@ export function SessionHeader(props: {
     const { session, api, onSessionDeleted } = props
     const title = useMemo(() => getSessionTitle(session), [session])
     const worktreeBranch = session.metadata?.worktree?.branch
+    const snowSessionId = session.metadata?.flavor === 'snow' ? session.metadata?.snowSessionId : undefined
     const modelModeLabel = getModelModeLabel(session.modelMode ?? 'default')
 
     const [menuOpen, setMenuOpen] = useState(false)
@@ -98,6 +99,11 @@ export function SessionHeader(props: {
             setMenuAnchorPoint({ x: rect.right, y: rect.bottom })
         }
         setMenuOpen((open) => !open)
+    }
+
+    const handleCopySnowSessionId = async () => {
+        if (!snowSessionId) return
+        await navigator.clipboard.writeText(snowSessionId)
     }
 
     // In Telegram, don't render header (Telegram provides its own)
@@ -145,6 +151,16 @@ export function SessionHeader(props: {
                             </span>
                             {worktreeBranch ? (
                                 <span>{t('session.item.worktree')}: {worktreeBranch}</span>
+                            ) : null}
+                            {snowSessionId ? (
+                                <button
+                                    type="button"
+                                    onClick={() => { void handleCopySnowSessionId() }}
+                                    className="inline-flex items-center gap-1 rounded px-1 py-0.5 text-[var(--app-hint)] transition-colors hover:bg-[var(--app-secondary-bg)] hover:text-[var(--app-fg)]"
+                                    title={snowSessionId}
+                                >
+                                    <span>{t('session.snowSessionId')}: {snowSessionId}</span>
+                                </button>
                             ) : null}
                         </div>
                     </div>
