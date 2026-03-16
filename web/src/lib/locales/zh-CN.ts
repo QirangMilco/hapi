@@ -75,11 +75,13 @@ export default {
 
   'dialog.archive.title': '归档会话',
   'dialog.archive.description': '确定要归档 "{name}" 吗？这将断开活动会话。',
+  'dialog.archive.snowDescription': '确定要归档 "{name}" 吗？仅删除 HAPI 侧会话记录，不删除 Snow 会话。',
   'dialog.archive.confirm': '归档',
   'dialog.archive.confirming': '归档中…',
 
   'dialog.delete.title': '删除会话',
   'dialog.delete.description': '确定要删除 "{name}" 吗？此操作无法撤销。',
+  'dialog.delete.snowDescription': '确定要删除 "{name}" 吗？将同时删除 HAPI 与 Snow 的会话记录，且不可撤销。',
   'dialog.delete.confirm': '删除',
   'dialog.delete.confirming': '删除中…',
   'dialog.error.default': '操作失败，请重试。',

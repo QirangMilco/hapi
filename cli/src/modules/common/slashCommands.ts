@@ -39,6 +39,7 @@ const BUILTIN_COMMANDS: Record<string, SlashCommand[]> = {
         { name: 'compress', description: 'Compress context', source: 'builtin' },
     ],
     opencode: [],
+    snow: [],
 };
 
 /**

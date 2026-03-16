@@ -199,6 +199,12 @@ function SessionItem(props: {
     })
 
     const sessionName = getSessionTitle(s)
+    const archiveDescription = s.metadata?.flavor === 'snow'
+        ? t('dialog.archive.snowDescription', { name: sessionName })
+        : t('dialog.archive.description', { name: sessionName })
+    const deleteDescription = s.metadata?.flavor === 'snow'
+        ? t('dialog.delete.snowDescription', { name: sessionName })
+        : t('dialog.delete.description', { name: sessionName })
     const modelModeLabel = getModelModeLabel(s.modelMode ?? 'default')
     const statusDotClass = s.active
         ? (s.thinking ? 'bg-[#007AFF]' : 'bg-[var(--app-badge-success-text)]')
@@ -272,6 +278,7 @@ function SessionItem(props: {
                 isOpen={menuOpen}
                 onClose={() => setMenuOpen(false)}
                 sessionActive={s.active}
+                showArchiveAndDelete={s.metadata?.flavor === 'snow'}
                 onRename={() => setRenameOpen(true)}
                 onArchive={() => setArchiveOpen(true)}
                 onDelete={() => setDeleteOpen(true)}
@@ -290,7 +297,7 @@ function SessionItem(props: {
                 isOpen={archiveOpen}
                 onClose={() => setArchiveOpen(false)}
                 title={t('dialog.archive.title')}
-                description={t('dialog.archive.description', { name: sessionName })}
+                description={archiveDescription}
                 confirmLabel={t('dialog.archive.confirm')}
                 confirmingLabel={t('dialog.archive.confirming')}
                 onConfirm={archiveSession}
@@ -302,7 +309,7 @@ function SessionItem(props: {
                 isOpen={deleteOpen}
                 onClose={() => setDeleteOpen(false)}
                 title={t('dialog.delete.title')}
-                description={t('dialog.delete.description', { name: sessionName })}
+                description={deleteDescription}
                 confirmLabel={t('dialog.delete.confirm')}
                 confirmingLabel={t('dialog.delete.confirming')}
                 onConfirm={deleteSession}

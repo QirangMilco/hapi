@@ -7,6 +7,7 @@ import { resolveCommand } from './registry'
 
 export async function runCli(): Promise<void> {
     const args = getCliArgs()
+    const requestedWorkingDirectory = process.env.HAPI_WORKING_DIRECTORY?.trim()
 
     if (args.includes('-v') || args.includes('--version')) {
         console.log(`hapi version: ${packageJson.version}`)
@@ -15,6 +16,10 @@ export async function runCli(): Promise<void> {
 
     if (isBunCompiled()) {
         process.env.DEV = 'false'
+    }
+
+    if (requestedWorkingDirectory) {
+        process.chdir(requestedWorkingDirectory)
     }
 
     const { command, context } = resolveCommand(args)

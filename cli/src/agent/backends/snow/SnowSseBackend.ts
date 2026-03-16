@@ -29,7 +29,7 @@ type PendingPermission = {
 
 export class SnowSseBackend implements AgentBackend {
     private readonly baseUrl: string;
-    private readonly yoloMode: boolean;
+    private yoloMode: boolean;
     private permissionHandler: ((request: PermissionRequest) => void) | null = null;
     private streamAbortController: AbortController | null = null;
     private streamReadyPromise: Promise<void> | null = null;
@@ -43,6 +43,10 @@ export class SnowSseBackend implements AgentBackend {
     constructor(options?: { baseUrl?: string; yoloMode?: boolean }) {
         this.baseUrl = (options?.baseUrl ?? process.env.HAPI_SNOW_SSE_URL ?? 'http://127.0.0.1:3000').replace(/\/+$/, '');
         this.yoloMode = options?.yoloMode === true;
+    }
+
+    setYoloMode(enabled: boolean): void {
+        this.yoloMode = enabled;
     }
 
     async initialize(): Promise<void> {

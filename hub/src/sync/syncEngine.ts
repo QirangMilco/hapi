@@ -12,6 +12,7 @@ import type { Server } from 'socket.io'
 import type { Store } from '../store'
 import type { RpcRegistry } from '../socket/rpcRegistry'
 import type { SSEManager } from '../sse/sseManager'
+import { configuration } from '../configuration'
 import { EventPublisher, type SyncEventListener } from './eventPublisher'
 import { MachineCache, type Machine } from './machineCache'
 import { MessageService } from './messageService'
@@ -273,7 +274,30 @@ export class SyncEngine {
         await this.sessionCache.renameSession(sessionId, name)
     }
 
-    async deleteSession(sessionId: string): Promise<void> {
+    async deleteSession(
+        sessionId: string,
+        options?: {
+            archiveIfActive?: boolean
+            deleteSnowSession?: boolean
+        }
+    ): Promise<void> {
+        const session = this.getSession(sessionId)
+        if (!session) {
+            throw new Error('Session not found')
+        }
+
+        if (session.active) {
+            if (options?.archiveIfActive) {
+                await this.archiveSession(sessionId)
+            } else {
+                throw new Error('Cannot delete active session')
+            }
+        }
+
+        if (options?.deleteSnowSession) {
+            await this.deleteSnowSession(session)
+        }
+
         await this.sessionCache.deleteSession(sessionId)
     }
 
@@ -464,5 +488,26 @@ export class SyncEngine {
         error?: string
     }> {
         return await this.rpcGateway.listSkills(sessionId)
+    }
+
+    private async deleteSnowSession(session: Session): Promise<void> {
+        if (session.metadata?.flavor !== 'snow') {
+            return
+        }
+
+        const snowSessionId = session.metadata.snowSessionId?.trim()
+        if (!snowSessionId) {
+            throw new Error('Snow session ID is missing')
+        }
+
+        const baseUrl = (session.metadata.snowSseUrl?.trim() || configuration.snowSseUrl).replace(/\/+$/, '')
+        const response = await fetch(`${baseUrl}/session/${encodeURIComponent(snowSessionId)}`, {
+            method: 'DELETE',
+            signal: AbortSignal.timeout(5000)
+        })
+        if (!response.ok) {
+            const body = await response.text().catch(() => '')
+            throw new Error(`Failed to delete Snow session: HTTP ${response.status}${body ? ` - ${body}` : ''}`)
+        }
     }
 }

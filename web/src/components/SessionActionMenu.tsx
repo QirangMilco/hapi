@@ -13,6 +13,7 @@ type SessionActionMenuProps = {
     isOpen: boolean
     onClose: () => void
     sessionActive: boolean
+    showArchiveAndDelete?: boolean
     onRename: () => void
     onArchive: () => void
     onDelete: () => void
@@ -96,6 +97,7 @@ export function SessionActionMenu(props: SessionActionMenuProps) {
         isOpen,
         onClose,
         sessionActive,
+        showArchiveAndDelete = false,
         onRename,
         onArchive,
         onDelete,
@@ -239,7 +241,28 @@ export function SessionActionMenu(props: SessionActionMenuProps) {
                     {t('session.action.rename')}
                 </button>
 
-                {sessionActive ? (
+                {showArchiveAndDelete ? (
+                    <>
+                        <button
+                            type="button"
+                            role="menuitem"
+                            className={`${baseItemClassName} text-red-500 hover:bg-red-500/10`}
+                            onClick={handleArchive}
+                        >
+                            <ArchiveIcon className="text-red-500" />
+                            {t('session.action.archive')}
+                        </button>
+                        <button
+                            type="button"
+                            role="menuitem"
+                            className={`${baseItemClassName} text-red-500 hover:bg-red-500/10`}
+                            onClick={handleDelete}
+                        >
+                            <TrashIcon className="text-red-500" />
+                            {t('session.action.delete')}
+                        </button>
+                    </>
+                ) : sessionActive ? (
                     <button
                         type="button"
                         role="menuitem"

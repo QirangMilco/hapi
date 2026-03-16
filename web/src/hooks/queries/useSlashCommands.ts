@@ -51,12 +51,13 @@ const BUILTIN_COMMANDS: Record<string, SlashCommand[]> = {
         { name: 'stats', description: 'Check session stats', source: 'builtin' },
     ],
     opencode: [],
+    snow: [],
 }
 
 export function useSlashCommands(
     api: ApiClient | null,
     sessionId: string | null,
-    agentType: string = 'claude'
+    agentType: string = ''
 ): {
     commands: SlashCommand[]
     isLoading: boolean
@@ -82,7 +83,7 @@ export function useSlashCommands(
 
     // Merge built-in commands with user-defined and plugin commands from API
     const commands = useMemo(() => {
-        const builtin = BUILTIN_COMMANDS[agentType] ?? BUILTIN_COMMANDS['claude'] ?? []
+        const builtin = BUILTIN_COMMANDS[agentType] ?? []
 
         // If API succeeded, add user-defined and plugin commands
         if (query.data?.success && query.data.commands) {

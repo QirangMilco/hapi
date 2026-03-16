@@ -19,6 +19,7 @@
  * - VAPID_SUBJECT: Contact email or URL for Web Push (defaults to mailto:admin@hapi.run)
  * - HAPI_HOME: Data directory (default: ~/.hapi)
  * - DB_PATH: SQLite database path (default: {HAPI_HOME}/hapi.db)
+ * - HAPI_SNOW_SSE_URL: Snow SSE API base URL (default: http://127.0.0.1:3000)
  */
 
 import { existsSync, mkdirSync } from 'node:fs'
@@ -39,6 +40,8 @@ export interface ConfigSources {
     corsOrigins: ConfigSource
     cliApiToken: 'env' | 'file' | 'generated'
 }
+
+export const DEFAULT_SNOW_SSE_URL = 'http://127.0.0.1:3000'
 
 class Configuration {
     /** Telegram Bot API token */
@@ -80,6 +83,9 @@ class Configuration {
     /** Allowed CORS origins for Mini App + Socket.IO (comma-separated env override) */
     public readonly corsOrigins: string[]
 
+    /** Snow SSE API base URL */
+    public readonly snowSseUrl: string
+
     /** Sources of each configuration value */
     public readonly sources: ConfigSources
 
@@ -102,6 +108,7 @@ class Configuration {
         this.listenPort = serverSettings.listenPort
         this.publicUrl = serverSettings.publicUrl
         this.corsOrigins = serverSettings.corsOrigins
+        this.snowSseUrl = (process.env.HAPI_SNOW_SSE_URL ?? DEFAULT_SNOW_SSE_URL).trim().replace(/\/+$/, '')
 
         // CLI API token - will be set by _setCliApiToken() before create() returns
         this.cliApiToken = ''

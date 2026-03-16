@@ -33,6 +33,7 @@ export const MetadataSchema = z.object({
     opencodeSessionId: z.string().optional(),
     cursorSessionId: z.string().optional(),
     snowSessionId: z.string().optional(),
+    snowSseUrl: z.string().optional(),
     tools: z.array(z.string()).optional(),
     slashCommands: z.array(z.string()).optional(),
     homeDir: z.string().optional(),

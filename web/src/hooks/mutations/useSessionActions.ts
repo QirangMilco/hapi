@@ -43,9 +43,22 @@ export function useSessionActions(
             if (!api || !sessionId) {
                 throw new Error('Session unavailable')
             }
+            if (agentFlavor === 'snow') {
+                await api.deleteSession(sessionId, { mode: 'hapi-only' })
+                return
+            }
             await api.archiveSession(sessionId)
         },
-        onSuccess: () => void invalidateSession(),
+        onSuccess: async () => {
+            if (!sessionId) return
+            if (agentFlavor === 'snow') {
+                queryClient.removeQueries({ queryKey: queryKeys.session(sessionId) })
+                clearMessageWindow(sessionId)
+                await queryClient.invalidateQueries({ queryKey: queryKeys.sessions })
+                return
+            }
+            await invalidateSession()
+        },
     })
 
     const switchMutation = useMutation({
@@ -95,6 +108,10 @@ export function useSessionActions(
         mutationFn: async () => {
             if (!api || !sessionId) {
                 throw new Error('Session unavailable')
+            }
+            if (agentFlavor === 'snow') {
+                await api.deleteSession(sessionId, { mode: 'hapi-and-snow' })
+                return
             }
             await api.deleteSession(sessionId)
         },

@@ -403,8 +403,14 @@ export class ApiClient {
         })
     }
 
-    async deleteSession(sessionId: string): Promise<void> {
-        await this.request(`/api/sessions/${encodeURIComponent(sessionId)}`, {
+    async deleteSession(sessionId: string, options?: { mode?: 'hapi-only' | 'hapi-and-snow' }): Promise<void> {
+        const params = new URLSearchParams()
+        if (options?.mode) {
+            params.set('mode', options.mode)
+        }
+        const qs = params.toString()
+        const url = `/api/sessions/${encodeURIComponent(sessionId)}${qs ? `?${qs}` : ''}`
+        await this.request(url, {
             method: 'DELETE'
         })
     }

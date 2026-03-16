@@ -29,6 +29,7 @@ const uploadDeleteSchema = z.object({
 })
 
 const MAX_UPLOAD_BYTES = 50 * 1024 * 1024
+const snowDeleteModeSchema = z.enum(['hapi-only', 'hapi-and-snow'])
 
 function estimateBase64Bytes(base64: string): number {
     const len = base64.length
@@ -328,12 +329,23 @@ export function createSessionsRoutes(getSyncEngine: () => SyncEngine | null): Ho
             return sessionResult
         }
 
-        if (sessionResult.session.active) {
+        const isSnowSession = sessionResult.session.metadata?.flavor === 'snow'
+        const modeRaw = c.req.query('mode')
+        const parsedMode = modeRaw === undefined ? null : snowDeleteModeSchema.safeParse(modeRaw)
+        if (parsedMode && !parsedMode.success) {
+            return c.json({ error: 'Invalid query: mode must be hapi-only or hapi-and-snow' }, 400)
+        }
+        const snowDeleteMode = parsedMode?.success ? parsedMode.data : null
+
+        if (sessionResult.session.active && !isSnowSession) {
             return c.json({ error: 'Cannot delete active session. Archive it first.' }, 409)
         }
 
         try {
-            await engine.deleteSession(sessionResult.sessionId)
+            await engine.deleteSession(sessionResult.sessionId, {
+                archiveIfActive: isSnowSession,
+                deleteSnowSession: isSnowSession && snowDeleteMode !== 'hapi-only'
+            })
             return c.json({ ok: true })
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to delete session'
@@ -357,8 +369,8 @@ export function createSessionsRoutes(getSyncEngine: () => SyncEngine | null): Ho
             return sessionResult
         }
 
-        // Get agent type from session metadata, default to 'claude'
-        const agent = sessionResult.session.metadata?.flavor ?? 'claude'
+        // Get agent type from session metadata, default to empty
+        const agent = sessionResult.session.metadata?.flavor ?? ''
 
         try {
             const result = await engine.listSlashCommands(sessionResult.sessionId, agent)

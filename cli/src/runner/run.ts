@@ -20,6 +20,7 @@ import { startRunnerControlServer } from './controlServer';
 import { createWorktree, removeWorktree, type WorktreeInfo } from './worktree';
 import { join } from 'path';
 import { buildMachineMetadata } from '@/agent/sessionFactory';
+import { projectPath } from '@/projectPath';
 
 export async function startRunner(): Promise<void> {
   // We don't have cleanup function at the time of server construction
@@ -387,12 +388,13 @@ export async function startRunner(): Promise<void> {
         };
 
         happyProcess = spawnHappyCLI(args, {
-          cwd: spawnDirectory,
+          cwd: projectPath(),
           detached: true,  // Sessions stay alive when runner stops
           stdio: ['ignore', 'pipe', 'pipe'],  // Capture stdout/stderr for debugging
           env: {
             ...process.env,
-            ...extraEnv
+            ...extraEnv,
+            HAPI_WORKING_DIRECTORY: spawnDirectory
           }
         });
 

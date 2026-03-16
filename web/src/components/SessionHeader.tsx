@@ -72,6 +72,12 @@ export function SessionHeader(props: {
     const title = useMemo(() => getSessionTitle(session), [session])
     const worktreeBranch = session.metadata?.worktree?.branch
     const snowSessionId = session.metadata?.flavor === 'snow' ? session.metadata?.snowSessionId : undefined
+    const archiveDescription = session.metadata?.flavor === 'snow'
+        ? t('dialog.archive.snowDescription', { name: title })
+        : t('dialog.archive.description', { name: title })
+    const deleteDescription = session.metadata?.flavor === 'snow'
+        ? t('dialog.delete.snowDescription', { name: title })
+        : t('dialog.delete.description', { name: title })
     const modelModeLabel = getModelModeLabel(session.modelMode ?? 'default')
 
     const [menuOpen, setMenuOpen] = useState(false)
@@ -91,6 +97,12 @@ export function SessionHeader(props: {
     const handleDelete = async () => {
         await deleteSession()
         onSessionDeleted?.()
+    }
+    const handleArchive = async () => {
+        await archiveSession()
+        if (session.metadata?.flavor === 'snow') {
+            onSessionDeleted?.()
+        }
     }
 
     const handleMenuToggle = () => {
@@ -196,6 +208,7 @@ export function SessionHeader(props: {
                 isOpen={menuOpen}
                 onClose={() => setMenuOpen(false)}
                 sessionActive={session.active}
+                showArchiveAndDelete={session.metadata?.flavor === 'snow'}
                 onRename={() => setRenameOpen(true)}
                 onArchive={() => setArchiveOpen(true)}
                 onDelete={() => setDeleteOpen(true)}
@@ -215,10 +228,10 @@ export function SessionHeader(props: {
                 isOpen={archiveOpen}
                 onClose={() => setArchiveOpen(false)}
                 title={t('dialog.archive.title')}
-                description={t('dialog.archive.description', { name: title })}
+                description={archiveDescription}
                 confirmLabel={t('dialog.archive.confirm')}
                 confirmingLabel={t('dialog.archive.confirming')}
-                onConfirm={archiveSession}
+                onConfirm={handleArchive}
                 isPending={isPending}
                 destructive
             />
@@ -227,7 +240,7 @@ export function SessionHeader(props: {
                 isOpen={deleteOpen}
                 onClose={() => setDeleteOpen(false)}
                 title={t('dialog.delete.title')}
-                description={t('dialog.delete.description', { name: title })}
+                description={deleteDescription}
                 confirmLabel={t('dialog.delete.confirm')}
                 confirmingLabel={t('dialog.delete.confirming')}
                 onConfirm={handleDelete}

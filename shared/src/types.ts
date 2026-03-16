@@ -24,6 +24,7 @@ export type {
     CursorPermissionMode,
     GeminiPermissionMode,
     OpencodePermissionMode,
+    SnowPermissionMode,
     ModelMode,
     PermissionMode,
     PermissionModeOption,
